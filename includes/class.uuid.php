@@ -44,6 +44,8 @@
 	        $clock_seq_hi_and_reserved = bin2hex ( substr ( $pr_bits, 8, 2 ) );
 	        $node = bin2hex ( substr ( $pr_bits, 10, 6 ) );
 	        
+	        $prefix = uuid::prefix();
+	        
 	        /**
 	         * Set the four most significant bits (bits 12 through 15) of the
 	         * time_hi_and_version field to the 4-bit version number from
@@ -62,7 +64,24 @@
 	        $clock_seq_hi_and_reserved = $clock_seq_hi_and_reserved >> 2;
 	        $clock_seq_hi_and_reserved = $clock_seq_hi_and_reserved | 0x8000;
 	        
-	        return sprintf ( '%08s-%04s-%04x-%04x-%012s', $time_low, $time_mid, $time_hi_and_version, $clock_seq_hi_and_reserved, $node );
+	        return sprintf ( '%08s%08s%04s%04x%04x%012s', $prefix, $time_low, $time_mid, $time_hi_and_version, $clock_seq_hi_and_reserved, $node );
+	    }
+	    
+	    function prefix($n=8) {
+	    	$n = intval($n);
+	    	if($n < 1 || $n > 100) { $n = 8; }
+	    	
+	    	$chars = array('a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','1','2','3','4','5','6','7','8','9');
+	    	$pass = '';
+	    	for ($i = 0; $i < $n-4; $i++){
+	    		$pass .= $chars[(rand() % strlen($chars))];
+	    	}
+	    	
+	    	$tmp = microtime();
+	    	$tmp = str_replace(' ', '', $tmp);
+	    	$tmp = substr($tmp, 2, 4);
+	    	
+	    	return str_shuffle($tmp.$pass);
 	    }
 	}
 ?>
