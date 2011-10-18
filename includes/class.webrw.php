@@ -355,7 +355,7 @@ class webrw {
 		//Check that reading is possible
 		if($readOK === TRUE && $this->actionValid()) { 
 			$crl = curl_init();
-			curl_setopt($crl, CURLOPT_URL, $dir_prot.$dir_host.DS.WORKSPACE_DIRECTORY.DS.$this->getKey().DS.DEFAULT_KEYVALUE_FILENAME);
+			curl_setopt($crl, CURLOPT_URL, $dir_prot.$dir_host.DS.WORKSPACE_DIRECTORY.DS.$this->getKey());
 			curl_setopt($crl, CURLOPT_RETURNTRANSFER, 1);
 			curl_setopt($crl, CURLOPT_CONNECTTIMEOUT, 5);
 			$rtn = curl_exec($crl);
@@ -470,7 +470,7 @@ class webrw {
 		
 		//Check that writing is possible
 		if($keyOK === TRUE && $this->actionValid()) {
-			$fh = @fopen(WORKSPACE_DIRECTORY.DS.$this->getKey().DS.DEFAULT_KEYVALUE_FILENAME,'w');
+			$fh = @fopen(WORKSPACE_DIRECTORY.DS.$this->getKey(),'w');
 			if(!$fh) {
 				$this->addMessage("Could not store value for key ('{$this->getKey()}').");
 		
