@@ -403,14 +403,9 @@ class webrw {
 		$count = 0;
 		$this->setKey(uuid::get());
 		while($uniqueFound === FALSE || $count < 1000) {
-			if(!is_dir(WORKSPACE_DIRECTORY.DS.$this->getKey())) {
-				try {
-					mkdir(WORKSPACE_DIRECTORY.DS.$this->getKey());
-					$uniqueFound = TRUE;
-					$result = str_replace('||KVWRITE_KEY||',$this->getKey(), $result);
-				} catch( Exception $ex) {
-					$this->addMessage('Could not create key ('.$this->getKey().').');
-				}
+			if(!is_file(WORKSPACE_DIRECTORY.DS.$this->getKey())) {
+				$uniqueFound = TRUE;
+				$result = str_replace('||KVWRITE_KEY||',$this->getKey(), $result);
 			} else {
 				$this->setKey(uuid::get());
 			}
@@ -422,7 +417,7 @@ class webrw {
 		
 		//Check that writing is possible
 		if($uniqueFound === TRUE && $this->actionValid()) {
-			$fh = @fopen(WORKSPACE_DIRECTORY.DS.$this->getKey().DS.DEFAULT_KEYVALUE_FILENAME,'w');
+			$fh = @fopen(WORKSPACE_DIRECTORY.DS.$this->getKey(),'w');
 			if(!$fh) {
 				$this->addMessage("Could not create value for key ('{$this->getKey()}').");
 		
