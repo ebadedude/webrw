@@ -55,8 +55,17 @@ webrw.parseUrl=function(url){ // parsing url and its arguments out
 	var u = {};
 	u.url=url.match(/[htf]+tp[s]*:\/\/[^?]+/);
 	if (u.url.length!==1){throw ('something is wrong with the syntax this url: '+url)}
-	else{u.url=u.url[0]}
+	else{
+		u.url=u.url[0];u.parms={};
+		url.slice(u.url.length+1).split('&').map(function(x){y=x.split('=');u.parms[y[0]]=y[1];return x});
+	}
 	return u
+}
+
+webrw.parms=function(x){ // read string with AV pairs into a structure
+	var parms={};
+	x.split('&').map(function(x){y=x.split('=');parms[y[0]]=y[1];return x});
+	return parms;
 }
 
 webrw.jobs={}; // jobs will be queued here
