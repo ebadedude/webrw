@@ -347,7 +347,7 @@ class webrw {
 		
 		$dir_host = $_SERVER['HTTP_HOST'];
 		$dir_prot = (isset($_SERVER['HTTPS']))?"https://":"http://";
-		if(!is_dir(WORKSPACE_DIRECTORY.DS.$this->getKey())) {
+		if(!is_file(WORKSPACE_DIRECTORY.DS.$this->getKey())) {
 			$this->addMessage('The specified key does not exist.');
 			$readOK = FALSE;
 		}
@@ -462,7 +462,7 @@ class webrw {
 			$keyOK = FALSE;
 		}
 		//check key exists
-		if(!is_dir(WORKSPACE_DIRECTORY.DS.$this->getKey())) {
+		if(!is_file(WORKSPACE_DIRECTORY.DS.$this->getKey())) {
 			$this->addMessage('The supplied key does not exist.');
 			$keyOK = FALSE;
 		}
