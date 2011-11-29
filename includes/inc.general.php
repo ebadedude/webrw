@@ -1,4 +1,4 @@
-<?php
+<?php 
 	/*
 	 * Name: inc.general.php
 	 * Type: Config File
