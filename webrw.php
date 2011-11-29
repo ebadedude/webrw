@@ -24,7 +24,13 @@
 			$my_webrw->kvupdate();
 			break;
 		default:
-			echo "Invalid action!!!";
+			if(isset($_GET['get']) || isset($_POST['get'])) {
+				$my_webrw->get();
+			} elseif(isset($_GET['set']) || isset($_POST['set'])) {
+				$my_webrw->set();
+			} else {
+				echo "Invalid action!!!";
+			}
 			break;
 	}
 ?>

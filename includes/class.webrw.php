@@ -58,12 +58,15 @@ class webrw {
 	private $webrw_action;				//Action to be performed
 	private $webrw_url;					//Resource URL
 	private $webrw_filename;			//Filename for writing
+	private $webrw_mime_type;			//Mime type for "read exact"
 	private $webrw_writemode;			//Mode for making writes "w" overwrite, "a" append 
 	private $webrw_writevalue;			//Value to be written
 	private $webrw_callback;			//Callback function. Defaults to DEFAULT_CALLBACK if nothing is specified.
 	private $webrw_argument;			//Additional argument used for reads
 	private $webrw_onload;				//onload function to be added to read calls
-	private $webrw_key;				//Key-value key string
+	private $webrw_key;					//Key-value key string
+	private $webrw_get;
+	private $webrw_set;
 	private $webrw_action_flag;
 	private $webrw_read_flag;
 	private $webrw_write_flag;
@@ -80,6 +83,9 @@ class webrw {
 	}
 	public function setFileName($str='') {
 		$this->webrw_filename = trim($str);
+	}
+	public function setMimeType($str='') {
+		$this->webrw_mime_type = trim(strtolower($str));
 	}
 	public function setWriteMode($str='') {
 		$this->webrw_writemode = trim(strtolower($str));
@@ -113,6 +119,12 @@ class webrw {
 	public function setKey($str='') {
 		$this->webrw_key = str_replace('-', '', trim($str));
 	}
+	public function setSet($str='') {							//I have issues with the naming of this function, but is should be okay for now
+		$this->webrw_set = trim($str);
+	}
+	public function setGet($str='') {							//I have issues with the naming of this function, but is should be okay for now
+		$this->webrw_get = trim($str);
+	}
 	private function addMessage($str='') {
 		if(strlen(trim($str)) > 0) {
 			array_push($this->webrw_messages, '"'.$str.'"');
@@ -131,6 +143,9 @@ class webrw {
 	public function getFileName() {
 		return $this->webrw_filename;
 	}
+	public function getMimeType() {
+		return $this->webrw_mime_type;
+	}
 	public function getWriteMode() {
 		return $this->webrw_writemode;
 	}
@@ -148,6 +163,12 @@ class webrw {
 	}
 	public function getKey() {
 		return $this->webrw_key;
+	}
+	public function getSet() {									//I have issues with the naming of this function, but is should be okay for now
+		return $this->webrw_set;
+	}
+	public function getGet() {									//I have issues with the naming of this function, but is should be okay for now
+		return $this->webrw_get;
 	}
 	public function getMessages() {
 		return $this->webrw_messages;
@@ -180,6 +201,11 @@ class webrw {
 		elseif(isset($_POST['name'])) { $this->setFileName(trim($_POST['name'])); }
 		else { $this->setFileName(''); }
 
+		//mime type
+		if(isset($_GET['mimetype'])) { $this->setMimeType(trim($_GET['mimetype'])); }
+		elseif(isset($_POST['mimetype'])) { $this->setMimeType(trim($_POST['mimetype'])); }
+		else { $this->setMimeType(''); }
+		
 		//write mode
 		if(isset($_GET['mode'])) { $this->setWriteMode(trim($_GET['mode'])); }
 		elseif(isset($_POST['mode'])) { $this->setWriteMode(trim($_POST['mode'])); }
@@ -210,6 +236,16 @@ class webrw {
 		elseif(isset($_POST['key'])) { $this->setKey(trim($_POST['key'])); }
 		else { $this->setKey(''); }
 		
+		//get
+		if(isset($_GET['get'])) { $this->setGet(trim($_GET['get'])); }
+		elseif(isset($_POST['get'])) { $this->setGet(trim($_POST['get'])); }
+		else { $this->setGet(''); }
+		
+		//key
+		if(isset($_GET['set'])) { $this->setSet(trim($_GET['set'])); }
+		elseif(isset($_POST['set'])) { $this->setSet(trim($_POST['set'])); }
+		else { $this->setSet(''); }
+		
 		$this->webrw_action_flag = FALSE;
 		$this->webrw_read_flag = FALSE;
 		$this->webrw_write_flag = FALSE;
@@ -223,12 +259,15 @@ class webrw {
 		$this->setAction('');
 		$this->setUrl('');
 		$this->setFileName('');
+		$this->setMimeType('');
 		$this->setWriteMode('');
 		$this->setWriteValue('');
 		$this->setCallback('');
 		$this->setArgument('');
 		$this->setOnload('');
 		$this->setKey('');
+		$this->setGet('');
+		$this->setSet('');
 		$this->webrw_action_flag = FALSE;
 		$this->webrw_read_flag = FALSE;
 		$this->webrw_write_flag = FALSE;
@@ -238,49 +277,71 @@ class webrw {
 	/*
 	 * read
 	 */
-	public function read($contentType=DEFAULT_CONTENT_TYPE) {
+	public function read($contentType=DEFAULT_CONTENT_TYPE, $mode=DEFAULT_READ_MODE) {
+		//check read mode
 		//Set Page Header Content Type
-		$this->setHtmlHeader($contentType);
-			
-		//create JSON framework
-		$result = $this->getCallback().'({"content":||READ_CONTENT||, "url":"'.$this->getUrl().'", "date":"'.date('M-d-Y H:i:s').'", "success":||READ_SUCCESS||, "messages": [||READ_MESSAGE||]}||READ_ARG||)||READ_ONLOAD||';
-		
-		//Check that reading is possible
-		if($this->actionValid() && $this->readValid()) { 
-			$crl = curl_init();
-			curl_setopt($crl, CURLOPT_URL, $this->getUrl());
-			curl_setopt($crl, CURLOPT_RETURNTRANSFER, 1);
-			curl_setopt($crl, CURLOPT_CONNECTTIMEOUT, 5);
-			$rtn = curl_exec($crl);
-			curl_close($crl);
-		
-			$final_rtn = '';
-			$result = str_replace('||READ_ARG||', $this->getArgument(), $result);
-			$result = str_replace('||READ_ONLOAD||', $this->getOnload(), $result);
-			
-			$search = array("\r\n", "\n\r", "\n", "\r");
-			$rtn = str_replace($search, '||READ_DIV||', $rtn);
-		
-			$arr_rtn = explode('||READ_DIV||', $rtn);
-			$counter = 0;
-			foreach($arr_rtn as $val) {
-				$final_rtn .= (($counter > 0)?",":"").json_encode($val);
-				$counter++;
-			}
-			$result = str_replace('||READ_SUCCESS||', 'true', $result);
-			$result = str_replace('||READ_MESSAGE||', implode(",", $this->getMessages()), $result);
-			$result = str_replace('||READ_CONTENT||', "[".$final_rtn."]", $result);
-			echo $result;
-			
-			return TRUE;
+		if(strcmp($mode,READ_MODE_EXACT) != 0) { 
+			$mode = READ_MODE_JSON; 
+			$this->setHtmlHeader($contentType);
+		} else {
+			$this->setHtmlHeader($this->getMimeType());
 		}
-		$result = str_replace('||READ_CONTENT||', '', $result);
-		$result = str_replace('||READ_SUCCESS||', 'false', $result);
-		$result = str_replace('||READ_MESSAGE||', implode(",", $this->getMessages()), $result);
-		$result = str_replace('||READ_ARG||', '', $result);
-		$result = str_replace('||READ_ONLOAD||', '', $result);
-		echo $result;
 		
+		if(strcmp($mode,READ_MODE_EXACT) != 0) { 
+			//create JSON framework
+			$result = $this->getCallback().'({"content":||READ_CONTENT||, "url":"'.$this->getUrl().'", "date":"'.date('M-d-Y H:i:s').'", "success":||READ_SUCCESS||, "messages": [||READ_MESSAGE||]}||READ_ARG||)||READ_ONLOAD||';
+			
+			//Check that reading is possible
+			if($this->actionValid() && $this->readValid()) { 
+				$crl = curl_init();
+				curl_setopt($crl, CURLOPT_URL, $this->getUrl());
+				curl_setopt($crl, CURLOPT_RETURNTRANSFER, 1);
+				curl_setopt($crl, CURLOPT_CONNECTTIMEOUT, 5);
+				$rtn = curl_exec($crl);
+				curl_close($crl);
+			
+				$final_rtn = '';
+				$result = str_replace('||READ_ARG||', $this->getArgument(), $result);
+				$result = str_replace('||READ_ONLOAD||', $this->getOnload(), $result);
+				
+				$search = array("\r\n", "\n\r", "\n", "\r");
+				$rtn = str_replace($search, '||READ_DIV||', $rtn);
+			
+				$arr_rtn = explode('||READ_DIV||', $rtn);
+				$counter = 0;
+				foreach($arr_rtn as $val) {
+					$final_rtn .= (($counter > 0)?",":"").json_encode($val);
+					$counter++;
+				}
+				$result = str_replace('||READ_SUCCESS||', 'true', $result);
+				$result = str_replace('||READ_MESSAGE||', implode(",", $this->getMessages()), $result);
+				$result = str_replace('||READ_CONTENT||', "[".$final_rtn."]", $result);
+				echo $result;
+				
+				return TRUE;
+			}
+			$result = str_replace('||READ_CONTENT||', '', $result);
+			$result = str_replace('||READ_SUCCESS||', 'false', $result);
+			$result = str_replace('||READ_MESSAGE||', implode(",", $this->getMessages()), $result);
+			$result = str_replace('||READ_ARG||', '', $result);
+			$result = str_replace('||READ_ONLOAD||', '', $result);
+			echo $result;
+		} else {
+			//Check that reading is possible
+			if($this->actionValid() && $this->readValid()) {
+				$crl = curl_init();
+				curl_setopt($crl, CURLOPT_URL, $this->getUrl());
+				curl_setopt($crl, CURLOPT_RETURNTRANSFER, 1);
+				curl_setopt($crl, CURLOPT_FOLLOWLOCATION, 1);
+				curl_setopt($crl, CURLOPT_CONNECTTIMEOUT, 5);
+				$rtn = curl_exec($crl);
+				curl_close($crl);
+				
+				echo $rtn;
+				return TRUE;
+			}
+		}
+			
 		return FALSE;
 	}
 	
@@ -310,7 +371,7 @@ class webrw {
 						
 				return FALSE;
 			} else {
-				fwrite($fh,$this->getWriteValue());
+				fwrite($fh,$this->getWriteValue()."\r\n");
 				$this->addMessage("Successfully write to the specified file ('{$this->getFileName()}').");
 				fclose($fh);
 
@@ -347,7 +408,7 @@ class webrw {
 		
 		$dir_host = $_SERVER['HTTP_HOST'];
 		$dir_prot = (isset($_SERVER['HTTPS']))?"https://":"http://";
-		if(!is_dir(WORKSPACE_DIRECTORY.DS.$this->getKey())) {
+		if(!is_file(WORKSPACE_DIRECTORY.DS.$this->getKey())) {
 			$this->addMessage('The specified key does not exist.');
 			$readOK = FALSE;
 		}
@@ -462,7 +523,7 @@ class webrw {
 			$keyOK = FALSE;
 		}
 		//check key exists
-		if(!is_dir(WORKSPACE_DIRECTORY.DS.$this->getKey())) {
+		if(!is_file(WORKSPACE_DIRECTORY.DS.$this->getKey())) {
 			$this->addMessage('The supplied key does not exist.');
 			$keyOK = FALSE;
 		}
@@ -504,6 +565,145 @@ class webrw {
 		return FALSE;
 	}
 	
+	public function get($arg='', $dispRes=TRUE) {
+		$readOK = TRUE;
+		$localFlag = FALSE;
+		$filePath = '';
+		$final_rtn = '';
+		
+		//Set Page Header Content Type
+		if($dispRes === TRUE) {
+			$this->setHtmlHeader(DEFAULT_CONTENT_TYPE);
+		}
+		
+		//create JSON framework
+		$result1 = $this->getCallback().'(||GET_CONTENT||)';
+		$result2 = $this->getCallback().'({"content":||GET_CONTENT||, "key":"||GET_KEY||", "date":"'.date('M-d-Y H:i:s').'", "success":false, "messages": [||GET_MESSAGE||]}||GET_ARG||)||GET_ONLOAD||';
+
+		$result2 = str_replace('||GET_ARG||', $this->getArgument(), $result2);
+		$result2 = str_replace('||GET_ONLOAD||', $this->getOnload(), $result2);
+		
+		//analyse arguments
+		if(strlen(trim($arg)) > 0) { $this->setGet($arg); }
+		if(strlen($this->getGet()) < 1) {
+			$readOK = FALSE;
+			$this->addMessage('You did not supply any agruments for "get".');
+		} elseif($this->keyValid($this->getGet())) {
+			$localFlag = TRUE;
+		}
+
+		if($readOK === TRUE) {
+			if($localFlag === TRUE) {
+				$dir_host = $_SERVER['HTTP_HOST'];
+				$dir_prot = (isset($_SERVER['HTTPS']))?"https://":"http://";
+				$filePath = $dir_prot.$dir_host.DS.WORKSPACE_DIRECTORY.DS.$this->getGet();
+				if(!is_file(WORKSPACE_DIRECTORY.DS.$this->getGet())) {
+					$this->addMessage('The specified key does not exist.');
+					$readOK = FALSE;
+				}
+			} else {
+				$filePath = $this->getGet();
+			}
+
+			$crl = curl_init();
+			curl_setopt($crl, CURLOPT_URL, $filePath);
+			curl_setopt($crl, CURLOPT_RETURNTRANSFER, 1);
+			curl_setopt($crl, CURLOPT_CONNECTTIMEOUT, 5);
+			$rtn = curl_exec($crl);
+			curl_close($crl);
+		
+			$search = array("\r\n", "\n\r", "\n", "\r");
+			$rtn = str_replace($search, '||GET_DIV||', $rtn);
+		
+			$arr_rtn = explode('||GET_DIV||', $rtn);
+			$counter = 0;
+			foreach($arr_rtn as $val) {
+				$final_rtn .= (($counter > 0)?",":"").json_encode($val);
+				$counter++;
+			}
+			$result1 = str_replace('||GET_CONTENT||', "[".$final_rtn."]", $result1);
+			if($dispRes === TRUE) {
+				echo $result1;
+			}
+			return TRUE;
+		}
+		$result2 = str_replace('||GET_MESSAGE||', implode(",", $this->getMessages()), $result2);
+		$result2 = str_replace('||GET_CONTENT||', "[".$final_rtn."]", $result2);
+		if($dispRes === TRUE) {
+			echo $result2;
+		}
+		return FALSE;
+	}
+	
+	public function set($val='', $key='') {
+		$uniqueFound = FALSE;
+		$keyExists = FALSE;
+		
+		//Set Page Header Content Type
+		$this->setHtmlHeader(DEFAULT_CONTENT_TYPE);
+		
+		//create JSON framework
+		$result1 = $this->getCallback().'("||KVWRITE_KEY||")';
+		$result2 = $this->getCallback().'({"success":||KVWRITE_SUCCESS||, "key":"||KVWRITE_KEY||", "messages": [||KVWRITE_MESSAGE||]})';
+
+		if(strlen(trim($val)) > 0) { $this->setSet($val); }
+		if(strlen(trim($key)) > 0) { $this->setKey($key); }
+		
+		if(strlen($this->getKey()) < 1) {
+			//get universal unique ID
+			$count = 0;
+			$this->setKey(uuid::get());
+			while($uniqueFound === FALSE || $count < 1000) {
+				if(!is_file(WORKSPACE_DIRECTORY.DS.$this->getKey())) {
+					$uniqueFound = TRUE;
+					$result1 = str_replace('||KVWRITE_KEY||',$this->getKey(), $result1);
+					$result2 = str_replace('||KVWRITE_KEY||',$this->getKey(), $result2);
+				} else {
+					$this->setKey(uuid::get());
+				}
+				$count++;
+			}
+			if($count >= 1000) {
+				$this->addMessage('Could not create key. Exceeded number of tries.');
+			}
+		} else {
+			$result1 = str_replace('||KVWRITE_KEY||',$this->getKey(), $result1);
+			$result2 = str_replace('||KVWRITE_KEY||',$this->getKey(), $result2);
+			if(is_file(WORKSPACE_DIRECTORY.DS.$this->getKey())) {
+				$keyExists = TRUE;
+			} else {
+				$this->addMessage("Supplied key does not exist.");
+			}
+		}
+				
+		//Check that writing is possible
+		if($uniqueFound === TRUE || $keyExists === TRUE) {
+			$fh = @fopen(WORKSPACE_DIRECTORY.DS.$this->getKey(),'a');
+			if(!$fh) {
+				$this->addMessage("Could not create value for key ('{$this->getKey()}').");
+		
+				$result2 = str_replace('||KVWRITE_SUCCESS||','false', $result2);
+				$result2 = str_replace('||KVWRITE_MESSAGE||',implode(",", $this->getMessages()), $result2);
+				echo $result2;
+		
+				return FALSE;
+			} else {
+				fwrite($fh,$this->getSet()."\r\n");
+				$this->addMessage("Successfully created key value pair.");
+				fclose($fh);
+				echo $result1;
+		
+				return TRUE;
+			}
+		}
+		$result2 = str_replace('||KVWRITE_SUCCESS||','false', $result2);
+		$result2 = str_replace('||KVWRITE_KEY||','', $result2);
+		$result2 = str_replace('||KVWRITE_MESSAGE||',implode(",", $this->getMessages()), $result2);
+		echo $result2;
+		
+		return FALSE;
+	}
+	
 	/*
 	 * actionValid
 	 * 
@@ -525,6 +725,32 @@ class webrw {
 	 *************************** Private functions ****************************
 	 **************************************************************************
 	 */
+	
+	/*
+	 * keyValid
+	 * 
+	 * Desc: Determines if a supplied key is valid.
+	 */
+	private function keyValid($key='') {
+		if (!preg_match("/^[a-zA-Z0-9]+$/",$key)) {
+			return FALSE;
+		} else {
+			return TRUE;
+		}		
+	}
+	
+	/*
+	 * urlValid
+	 * 
+	 * Desc: Determines if a supplied URL is valid.
+	 */
+	private function urlValid($url='') {
+		if (!preg_match("/^([a-zA-Z][a-zA-Z0-9\+\-\.]*:((((\/\/((((([a-zA-Z0-9\-_\.!\~\*'\(\);:\&=\+$,]|(%[a-fA-F0-9]{2}))*)\@)?((((([a-zA-Z0-9](([a-zA-Z0-9\-])*[a-zA-Z0-9])?)\.)*([a-zA-Z](([a-zA-Z0-9\-])*[a-zA-Z0-9])?)(\.)?)|([0-9]+((\.[0-9]+){3})))(:[0-9]*)?))?|([a-zA-Z0-9\-_\.!\~\*'\(\)$,;:\@\&=\+]|(%[a-fA-F0-9]{2}))+)(\/(([a-zA-Z0-9\-_\.!\~\*'\(\):\@\&=\+$,]|(%[a-fA-F0-9]{2}))*(;([a-zA-Z0-9\-_\.!\~\*'\(\):\@\&=\+$,]|(%[a-fA-F0-9]{2}))*)*)(\/(([a-zA-Z0-9\-_\.!\~\*'\(\):\@\&=\+$,]|(%[a-fA-F0-9]{2}))*(;([a-zA-Z0-9\-_\.!\~\*'\(\):\@\&=\+$,]|(%[a-fA-F0-9]{2}))*)*))*)?)|(\/(([a-zA-Z0-9\-_\.!\~\*'\(\):\@\&=\+$,]|(%[a-fA-F0-9]{2}))*(;([a-zA-Z0-9\-_\.!\~\*'\(\):\@\&=\+$,]|(%[a-fA-F0-9]{2}))*)*)(\/(([a-zA-Z0-9\-_\.!\~\*'\(\):\@\&=\+$,]|(%[a-fA-F0-9]{2}))*(;([a-zA-Z0-9\-_\.!\~\*'\(\):\@\&=\+$,]|(%[a-fA-F0-9]{2}))*)*))*))(\?([a-zA-Z0-9\-_\.!\~\*'\(\);/\?:\@\&=\+$,]|(%[a-fA-F0-9]{2}))*)?)|(([a-zA-Z0-9\-_\.!\~\*'\(\);\?:\@\&=\+$,]|(%[a-fA-F0-9]{2}))([a-zA-Z0-9\-_\.!\~\*'\(\);/\?:\@\&=\+$,]|(%[a-fA-F0-9]{2}))*)))?(\#([a-zA-Z0-9\-_\.!\~\*'\(\);/\?:\@\&=\+$,]|(%[a-fA-F0-9]{2}))*)?$/i",$url)) {
+			return FALSE;
+		} else {
+			return TRUE;
+		}		
+	}
 	
 	/*
 	 * readValid
