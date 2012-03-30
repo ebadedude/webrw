@@ -1,4 +1,11 @@
 <?php
+	/*
+	 * @name: class.uuid.php
+	 * 
+	 * @desc: Class to handle the generation of random strings
+	 * @code: Bade Iriabho
+	 * 
+	 */
 	class uuid {
 	    
 	    protected $urand;
