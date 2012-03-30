@@ -1,18 +1,19 @@
 <?php 
 	/*
-	 * Name: inc.general.php
-	 * Type: Config File
-	 * Written by: Bade Iriabho (c) 2011
+	 * @name: inc.general.php
+	 * @type: Config File
+	 * @code: Bade Iriabho (c) 2011
 	 *
-	 * Description:
-	 * Hold the general functions.
+	 * @desc: Hold the general functions.
+	 * @reqd: inc.config.php
 	 *
 	 */
 
 	/*
-	 * cleanWorkspace
+	 * @func: cleanWorkspace
+	 * @desc: Function called to clean the workspace folder
+	 * @args: None
 	 * 
-	 * Desc: function called to clean the workspace folder
 	 */
 	function cleanWorkspace() {
 		$workspace_path = WORKSPACE_DIRECTORY;
@@ -20,7 +21,7 @@
 		
 		$handle = opendir($workspace_path);
 		while($tmp=readdir($handle)) {
-			if($tmp!='..' && $tmp!='.' && $tmp!='') {
+			if($tmp!='..' && $tmp!='.' && $tmp!='' && !in_array($tmp, WORKSPACE_EXCLUDE)) {
 				if(is_file($workspace_path.DS.$tmp)) {
 					$fileStat = stat($workspace_path.DS.$tmp);
 					$fileinfo = timeDifference(getStatTime($fileStat), $current_time);
@@ -40,14 +41,12 @@
 	}
 	
 	/*
-	 * getStatTime
+	 * @func: getStatTime
+	 * @desc: Using PHP stat function, this function returns the unix timestamp values
+	 * @args: $arg($statArr) - 	1(mtime) last modified unixtime
+	 * 							2(ctime) created unixtime
+	 * 							3(atime) last accessed unixtime
 	 * 
-	 * Desc: using PHP stat function, this function returns the unix timestamp values
-	 * 
-	 * Arguments:
-	 * 		$statArr -  1 (mtime) last modified unixtime
-	 * 					2 (ctime) created unixtime
-	 * 					3 (atime) last accessed unixtime
 	 */
 	function getStatTime($statArr='', $arg=1) {
 		$arg = intval($arg);
@@ -88,9 +87,12 @@
 	}
 	
 	/*
-	 * timeDifference
+	 * @func: timeDifference
+	 * @desc: Takes unix timestamp integer values for $start and $end and computes the time difference between both
+	 * @args: $start - Start Time
+	 * 		  $end   - End Time
+	 * 		  $mode  - Mode to return answer (h-hours, m-minutes, s-seconds)
 	 * 
-	 * Desc: takes unix timestamp integer values for $start and $end and computes the time difference between both
 	 */
 	function timeDifference($start=0, $end=0, $mode='s') {
 		$negative = false;
@@ -129,9 +131,10 @@
 	}
 	
 	/*
-	 * deleteFile
+	 * @func: deleteFile
+	 * @desc: Deletes a specific file
+	 * @args: $tmp_path - path to file on the server meant for deletion
 	 * 
-	 * Desc: Deletes a specific file
 	 */
 	function deleteFile($tmp_path='') {
 		if(is_writeable($tmp_path) && is_file($tmp_path)) {
@@ -149,9 +152,10 @@
 	}
 	
 	/*
-	 * deleteFolder
+	 * @func: deleteFolder
+	 * @desc: Deletes a specific folder or directory
+	 * @args: $tmp_path - path to folder on the server meant for deletion
 	 * 
-	 * Desc: Deletes a specific folder or directory
 	 */
 	function deleteFolder($tmp_path='') {
 		if(!is_writeable($tmp_path) && is_dir($tmp_path)) {

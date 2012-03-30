@@ -1,45 +1,40 @@
 <?php 
 /*
- * Name: class.webrw.php
- * Type: Class
- * Version: 1.1.0
- * Written by: Bade Iriabho (c) 2011
+ * @name: class.webrw.php
+ * @type: Class
+ * @vers: Version 1.2.0
+ * @code: Bade Iriabho (c) 2011
  * 
- * Description:
- *  Houses several functions that allows a paricular abstraction of a "web read and write" package
+ * @desc: Houses several functions that allows a paricular abstraction of a "web read and write" package
  * 
  * Querystrings
  * //General
  * 	action 	- Action you want the class to perform (read, write, keyval)
  * 	callback- Callback function name
  * 
- * //read
- * 	url 	- URL for resource
- *  arg		- Additional arguments
- *  onl		- Onload function
+ * @func: read
+ * @args: url - URL for resource
+ * 		  arg - Additional arguments
+ *  	  onl - Onload function
  *  
- * //write
- *  name	- Name of file to be written to
- *  value	- Value to be written to file
- *  mode	- Mode to use "w" overwrite, "a" append. In either case, if file does not exist, a new file is created 
+ * @func: write
+ * @args: name  - Name of file to be written to
+ *  	  value - Value to be written to file
+ *  	  mode  - Mode to use "w" overwrite, "a" append. In either case, if file does not exist, a new file is created 
  * 
- * //kvread
- *  key		- key used to retrieve content
- *  arg		- Additional arguments
- *  onl		- Onload function
+ * @func: kvread
+ * @args: key - key used to retrieve content
+ *  	  arg - Additional arguments
+ *  	  onl - Onload function
  *  
- * //kvwrite
- *  value	- Value to be written to a new key
+ * @func: kvwrite
+ * @args: value	- Value to be written to a new key
  *  
- * //kvupdate
- *  key		- key used to update content
- *  value	- Value to be written to a new key
+ * @func: kvupdate
+ * @args: key   - key used to update content
+ *  	  value - Value to be written to a new key
  * 
- * 
- * REQUIRES:
- * - inc.config.php
- * - class.uuid.php
- * - inc.general.php
+ * @reqd: inc.config.php, class.uuid.php, inc.general.php
  * 
  */
 
@@ -75,25 +70,13 @@ class webrw {
 	/*
 	 * Public Set/Add Functions
 	 */
-	public function setAction($str='') {
-		$this->webrw_action = trim($str);
-	}
-	public function setUrl($url='') {
-		$this->webrw_url = trim($url);
-	}
-	public function setFileName($str='') {
-		$this->webrw_filename = trim($str);
-	}
-	public function setMimeType($str='') {
-		$this->webrw_mime_type = trim(strtolower($str));
-	}
-	public function setWriteMode($str='') {
-		$this->webrw_writemode = trim(strtolower($str));
-	}
-	public function setWriteValue($str='') {
-		$this->webrw_writevalue = trim($str);
-	}
-	public function setCallback($str='') {
+	public function setAction($str='') { $this->webrw_action = trim($str); }
+	public function setUrl($url='') { $this->webrw_url = trim($url); }
+	public function setFileName($str='') { $this->webrw_filename = trim($str); }
+	public function setMimeType($str='') { $this->webrw_mime_type = trim(strtolower($str)); }
+	public function setWriteMode($str='') { $this->webrw_writemode = trim(strtolower($str)); }
+	public function setWriteValue($str='') { $this->webrw_writevalue = trim($str); }
+	public function setCallback($str='') { 
 		$str = trim($str);
 		if(strlen($str) > 0) {
 			$this->webrw_callback = trim($str);
@@ -116,9 +99,7 @@ class webrw {
 			$this->webrw_onload .= $str.';';
 		}
 	}
-	public function setKey($str='') {
-		$this->webrw_key = str_replace('-', '', trim($str));
-	}
+	public function setKey($str='') { $this->webrw_key = str_replace('-', '', trim($str)); }
 	public function setSet($str='') {							//I have issues with the naming of this function, but is should be okay for now
 		$this->webrw_set = trim($str);
 	}
@@ -177,9 +158,7 @@ class webrw {
 	/*
 	 * public other functions
 	 */
-	public function clearMessages() {
-		$this->webrw_messages = array();
-	}
+	public function clearMessages() { $this->webrw_messages = array(); }
 	
 	
 	/*
