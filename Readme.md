@@ -4,7 +4,7 @@ A proxy tool built in PHP that supports basic web http restful api ideas like **
 
 License
 ---------------
-FREE LICENSE. You can use this software as you see fit just remember to give me some credit. The creator of this tool will bear no liability to any damage that comes from the use of this tool.
+FREE LICENSE. You can use this software as you see fit just remember to give me some credit. The Author of this tool will bear no liability for any damage that results from the use of this tool.
 
 Prerequisites
 ---------------
