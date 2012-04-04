@@ -2,13 +2,16 @@ Readme
 ---------------
 A proxy tool built in PHP that supports basic web http restful api ideas like **get** and **set**. It does implement a **delete**, but it is an internal feature. Results are in JSON format mainly because this tool is supposed to be used programatically (sometimes to get around the same origin policy issue)
 
+
 License
 ---------------
-FREE LICENSE. You can use this software as you see fit just remember to give me some credit. The Author of this tool will bear no liability for any damage that results from the use of this tool.
+FREE LICENSE. You can use this software as you see fit just remember to give me some credit. The Author of this tool will bear **no** liability for any damage that results from the use of this tool.
+
 
 Prerequisites
 ---------------
 - PHP5 with curl library enabled
+
 
 How to Install
 ---------------
@@ -17,15 +20,24 @@ How to Install
   chmod a+rw /PATH/TO/FOLDER/doc/
 - Go to the url you just created and without entering anything, you should get "Invalid action!!!"
 
+
 Usage
 ---------------
 ### get
+
+**GET RESULT AS JSON OBJECT**
+
 `http://www.webrw-site.com?get=www.google.com`
 
+### doc 
+
+**GET RESULT IN RAW FORMAT**
+
+`http://www.webrw-site.com?doc=www.google.com`
 
 ### set
 
-SIMPLE ENTRY
+**Simple set operation**
 
 By entering the following
 
@@ -53,7 +65,7 @@ Returns
 
 `callback(["lalalalalalalala",""])`
 
-APPEND
+**Append data value to an existing key**
 
 To append to an existing resource, simply add the "key" to the URL 
 
@@ -72,6 +84,7 @@ you should get
 `lalalalalalalala`
 
 `lelelelelelelele`
+
 
 Useful Notes
 ---------------

@@ -90,7 +90,11 @@ class webrw {
 		if(isset($_GET['get'])) { $this->setUrl(trim($_GET['get'])); } 
 		elseif(isset($_POST['get'])) { $this->setUrl(trim($_POST['get'])); }
 		else { $this->setUrl(''); }
-
+		if($this->isDoc()) {
+			if(isset($_GET['doc'])) { $this->setUrl(trim($_GET['doc'])); } 
+			elseif(isset($_POST['doc'])) { $this->setUrl(trim($_POST['doc'])); }
+		}
+		
 		//set
 		if(isset($_GET['set'])) { $this->setValue(trim($_GET['set'])); }
 		elseif(isset($_POST['set'])) { $this->setValue(trim($_POST['set'])); }
@@ -131,9 +135,9 @@ class webrw {
 	
 	/*
 	 * @function: get
-	 * @arguments:	url - URL for resource
-	 * 				arg - Additional arguments
-	 *  			onl - Onload function
+	 * @arguments:	$arg - URL for resource
+	 * 				$dispRes - Echo the results
+	 *  			$contentType - Content Type to use if display results is true
 	 */
 	public function get($arg='', $dispRes=TRUE, $contentType=DEFAULT_CONTENT_TYPE) {
 		$readOK = TRUE;
@@ -143,7 +147,7 @@ class webrw {
 		$arg = trim($arg);
 		
 		//Set Page Header Content Type
-		if($dispRes === TRUE) {
+		if($dispRes === TRUE && !$this->isDoc()) {
 			$this->setHtmlHeader($contentType);
 		}
 		
@@ -185,39 +189,49 @@ class webrw {
 			$crl = curl_init();
 			curl_setopt($crl, CURLOPT_URL, $filePath);
 			curl_setopt($crl, CURLOPT_RETURNTRANSFER, 1);
+			curl_setopt($crl, CURLOPT_FOLLOWLOCATION, 1);
 			curl_setopt($crl, CURLOPT_CONNECTTIMEOUT, 5);
 			$rtn = curl_exec($crl);
 			curl_close($crl);
 		
-			$search = array("\r\n", "\n\r", "\n", "\r");
-			$rtn = str_replace($search, '||GET_DIV||', $rtn);
+			if($this->isDoc()) {
+				echo $rtn;
+			} else {
+				$search = array("\r\n", "\n\r", "\n", "\r");
+				$rtn = str_replace($search, '||GET_DIV||', $rtn);
 		
-			$arr_rtn = explode('||GET_DIV||', $rtn);
-			$counter = 0;
-			foreach($arr_rtn as $val) {
-				$final_rtn .= (($counter > 0)?",":"").json_encode($val);
-				$counter++;
-			}
-			$result1 = str_replace('||GET_CONTENT||', "[".$final_rtn."]", $result1);
-			if($dispRes === TRUE) {
-				echo $result1;
+				$arr_rtn = explode('||GET_DIV||', $rtn);
+				$counter = 0;
+				foreach($arr_rtn as $val) {
+					$final_rtn .= (($counter > 0)?",":"").json_encode($val);
+					$counter++;
+				}
+				$result1 = str_replace('||GET_CONTENT||', "[".$final_rtn."]", $result1);
+				if($dispRes === TRUE) {
+					echo $result1;
+				}
 			}
 			return TRUE;
 		}
-		$result2 = str_replace('||GET_MESSAGE||', implode(",", $this->getMessages()), $result2);
-		$result2 = str_replace('||GET_CONTENT||', "[".$final_rtn."]", $result2);
-		if($dispRes === TRUE) {
-			echo $result2;
+		if($this->isDoc()) {
+			if($dispRes === TRUE) {
+				echo implode("<br />", $this->getMessages());
+			}
+		} else {
+			$result2 = str_replace('||GET_MESSAGE||', implode(",", $this->getMessages()), $result2);
+			$result2 = str_replace('||GET_CONTENT||', "[".$final_rtn."]", $result2);
+			if($dispRes === TRUE) {
+				echo $result2;
+			}
 		}
 		return FALSE;
 	}
 	
 	/*
 	 * @function: set
-	 * @arguments: 	name  - Name of file to be written to
-	 *  			value - Value to be written to file
-	 *  			mode  - Mode to use "w" overwrite, "a" append. In either case, if file does not exist, a new file is created 
-
+	 * @arguments: 	$val - Value to be written to file
+	 *  			$key - Key to append values to
+	 *
 	 */
 	public function set($val='', $key='') {
 		$uniqueFound = FALSE;
@@ -306,6 +320,27 @@ class webrw {
 		} else {
 			return TRUE;
 		}		
+	}
+	
+	/*
+	 * @function: isDoc
+	 * @type: private
+	 * @desciption: Determines if the user is using the doc query request versus the get.
+	 * @argumments: None
+	 * 
+	 */
+	private function isDoc() {
+		$get = FALSE;
+		$doc = FALSE;
+		
+		if(isset($_GET['get']) || isset($_POST['get'])) { $get = TRUE; }
+		if(isset($_GET['doc']) || isset($_POST['doc'])) { $doc = TRUE; }
+		
+		if($get === TRUE) {
+			return FALSE;
+		} else {
+			return $doc;
+		}
 	}
 	
 	/*
