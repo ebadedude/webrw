@@ -26,31 +26,49 @@ Usage
 ### set
 SIMPLE ENTRY
 By entering the following
+
 `http://www.webrw-site.com?set=lalalalalalalala`
+
 you should get something similar to
+
 `callback("UID:e5lr859ffa6f73234ab14bcc9a2d5c1876d31fd1")`
 
 To retrieve your data you have two approaches
+
 Raw Data
+
 `http://www.webrw-site.com/doc/UID:e5lr859ffa6f73234ab14bcc9a2d5c1876d31fd1`
+
 Returns 
+
 `lalalalalalalala`
 
 As a JSON object
+
 `http://www.webrw-site.com/?get=UID:e5lr859ffa6f73234ab14bcc9a2d5c1876d31fd1`
+
 Returns
+
 `callback(["lalalalalalalala",""])`
 
 APPEND
+
 To append to an existing resource, simply add the "key" to the URL 
+
 `http://www.webrw-site.com?set=lelelelelelelele&key=UID:e5lr859ffa6f73234ab14bcc9a2d5c1876d31fd1`
+
 Returns the same key (as expected)
+
 `callback("UID:e5lr859ffa6f73234ab14bcc9a2d5c1876d31fd1")`
 
 Now if you look at the key
+
 `http://www.webrw-site.com/doc/UID:e5lr859ffa6f73234ab14bcc9a2d5c1876d31fd1`
+
 you should get 
+
 `lalalalalalalala`
+
 `lelelelelelelele`
 
 Useful Notes
