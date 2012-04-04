@@ -1,9 +1,15 @@
 <?php
 	/*
-	 * @name: class.uuid.php
+	 * Random Unique ID generating class
 	 * 
-	 * @desc: Class to handle the generation of random strings
-	 * @code: Bade Iriabho
+	 * Generates Random Unique IDs that can be used in any application
+	 * 
+	 * @name: class.uuid.php
+	 * @author: Marius Karthaus
+	 * @author: Bade Iriabho <ebade@yahoo.com>
+	 * @copyright: 2011-12 Bade Iriabho
+	 * @license: Free to use, just remember the first law of sharing "Give credit where it is due". Author is not liable for any damages that results from using this code.
+	 * @version: See VERSION
 	 * 
 	 */
 	class uuid {
@@ -71,7 +77,7 @@
 	        $clock_seq_hi_and_reserved = $clock_seq_hi_and_reserved >> 2;
 	        $clock_seq_hi_and_reserved = $clock_seq_hi_and_reserved | 0x8000;
 	        
-	        return sprintf ( '%08s%08s%04s%04x%04x%012s', $prefix, $time_low, $time_mid, $time_hi_and_version, $clock_seq_hi_and_reserved, $node );
+	        return sprintf ( '%4s%08s%08s%04s%04x%04x%012s', 'UID:', $prefix, $time_low, $time_mid, $time_hi_and_version, $clock_seq_hi_and_reserved, $node );
 	    }
 	    
 	    function prefix($n=8) {

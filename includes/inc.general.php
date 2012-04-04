@@ -1,27 +1,33 @@
 <?php 
 	/*
+	 * General functions for webrw
+	 * 
+	 * This file contains general functions used with webrw. It contains the functions for garbage collection.
+	 * 
 	 * @name: inc.general.php
-	 * @type: Config File
-	 * @code: Bade Iriabho (c) 2011
-	 *
-	 * @desc: Hold the general functions.
-	 * @reqd: inc.config.php
-	 *
+	 * @author: Bade Iriabho <ebade@yahoo.com>
+	 * @copyright: 2011-12 Bade Iriabho
+	 * @license: Free to use, just remember the first law of sharing "Give credit where it is due". Author is not liable for any damages that results from using this code.
+	 * @version: See VERSION
+	 * @requires: inc.config.php
+	 * 
 	 */
 
+
 	/*
-	 * @func: cleanWorkspace
-	 * @desc: Function called to clean the workspace folder
-	 * @args: None
+	 * @function: cleanWorkspace
+	 * @description: Function called to clean the workspace folder
+	 * @arguments: None
 	 * 
 	 */
 	function cleanWorkspace() {
 		$workspace_path = WORKSPACE_DIRECTORY;
+		$workspace_exclude = explode("|", WORKSPACE_EXCLUDE);
 		$current_time = time();
 		
 		$handle = opendir($workspace_path);
 		while($tmp=readdir($handle)) {
-			if($tmp!='..' && $tmp!='.' && $tmp!='' && !in_array($tmp, WORKSPACE_EXCLUDE)) {
+			if($tmp!='..' && $tmp!='.' && $tmp!='' && !in_array($tmp, $workspace_exclude)) {
 				if(is_file($workspace_path.DS.$tmp)) {
 					$fileStat = stat($workspace_path.DS.$tmp);
 					$fileinfo = timeDifference(getStatTime($fileStat), $current_time);
@@ -41,11 +47,11 @@
 	}
 	
 	/*
-	 * @func: getStatTime
-	 * @desc: Using PHP stat function, this function returns the unix timestamp values
-	 * @args: $arg($statArr) - 	1(mtime) last modified unixtime
-	 * 							2(ctime) created unixtime
-	 * 							3(atime) last accessed unixtime
+	 * @function: getStatTime
+	 * @description: Using PHP stat function, this function returns the unix timestamp values
+	 * @arguments: $arg($statArr) - 1(mtime) last modified unixtime
+	 * 								2(ctime) created unixtime
+	 * 								3(atime) last accessed unixtime
 	 * 
 	 */
 	function getStatTime($statArr='', $arg=1) {
@@ -87,11 +93,11 @@
 	}
 	
 	/*
-	 * @func: timeDifference
-	 * @desc: Takes unix timestamp integer values for $start and $end and computes the time difference between both
-	 * @args: $start - Start Time
-	 * 		  $end   - End Time
-	 * 		  $mode  - Mode to return answer (h-hours, m-minutes, s-seconds)
+	 * @function: timeDifference
+	 * @description: Takes unix timestamp integer values for $start and $end and computes the time difference between both
+	 * @arguments:	$start - Start Time
+	 * 				$end   - End Time
+	 * 				$mode  - Mode to return answer (h-hours, m-minutes, s-seconds)
 	 * 
 	 */
 	function timeDifference($start=0, $end=0, $mode='s') {
@@ -131,9 +137,9 @@
 	}
 	
 	/*
-	 * @func: deleteFile
-	 * @desc: Deletes a specific file
-	 * @args: $tmp_path - path to file on the server meant for deletion
+	 * @function: deleteFile
+	 * @description: Deletes a specific file
+	 * @arguments: $tmp_path - path to file on the server meant for deletion
 	 * 
 	 */
 	function deleteFile($tmp_path='') {
@@ -152,9 +158,9 @@
 	}
 	
 	/*
-	 * @func: deleteFolder
-	 * @desc: Deletes a specific folder or directory
-	 * @args: $tmp_path - path to folder on the server meant for deletion
+	 * @function: deleteFolder
+	 * @description: Deletes a specific folder or directory
+	 * @arguments: $tmp_path - path to folder on the server meant for deletion
 	 * 
 	 */
 	function deleteFolder($tmp_path='') {
